@@ -1,0 +1,31 @@
+[project]
+name = "qc-shared"
+version = "0.1.0"
+description = "Quran Companion shared Python libraries — canonical Quran keys, metadata, licensing registry (handbook §21)"
+requires-python = ">=3.12"
+dependencies = [
+    # Core-level table definitions for the shared `qds` reference schema
+    # (read by services/api, written by tools/pack-builder, migrated by Alembic).
+    "sqlalchemy>=2.0",
+]
+
+[dependency-groups]
+dev = [
+    "jsonschema>=4.26.0",
+    "pytest>=8.3",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.11",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["qc_shared"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
