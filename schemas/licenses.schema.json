@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.quran-companion.dev/licenses.schema.json",
+  "title": "license_registry",
+  "description": "Schema for schemas/licenses.json — the single registry of every third-party dataset, its license, attribution string, and usage constraints (Handbook §6.4). CI fails if a pack manifest references an item absent here; the About screen renders attributions from this file.",
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string" },
+    "registry_version": {
+      "const": 1
+    },
+    "entries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/entry" }
+    }
+  },
+  "required": ["registry_version", "entries"],
+  "additionalProperties": false,
+  "$defs": {
+    "entry": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "type": "string",
+          "pattern": "^[a-z]+:[a-z0-9._-]+$",
+          "description": "Dataset item id, matching pack-manifest contents ids (`kind:name[-version]`)."
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable dataset name."
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Upstream source of the dataset."
+        },
+        "license": {
+          "type": "string",
+          "description": "SPDX identifier where one exists; otherwise a registry-defined code documented in usage_constraints."
+        },
+        "license_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "attribution": {
+          "type": "string",
+          "description": "Exact attribution string to render on the About screen."
+        },
+        "usage_constraints": {
+          "type": "string",
+          "description": "Constraints beyond the SPDX license text (redistribution limits, no-modification clauses, share-alike scope)."
+        },
+        "added_at": {
+          "type": "string",
+          "format": "date",
+          "description": "Date the entry was added to the registry."
+        }
+      },
+      "required": ["item", "name", "source_url", "license", "attribution", "added_at"],
+      "additionalProperties": false
+    }
+  }
+}

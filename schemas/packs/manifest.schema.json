@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.quran-companion.dev/packs/manifest.schema.json",
+  "title": "pack_manifest",
+  "description": "Manifest of a .qpack data pack (zip + manifest) built by tools/pack-builder (Handbook §6.3). Packs are immutable and signed; clients refuse unsigned or checksum-failing packs (NFR-1). CI fails if any licenses[].item is absent from schemas/licenses.json (§6.4).",
+  "type": "object",
+  "properties": {
+    "manifest_version": {
+      "const": 1,
+      "description": "Manifest format version; bump only via ADR."
+    },
+    "pack_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "Stable pack identity across versions.",
+      "examples": ["core-hafs"]
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]{4}\\.[0-9]{2}\\.[0-9]+$",
+      "description": "CalVer YYYY.0M.MICRO; updates ship as new versions, clients keep current + previous.",
+      "examples": ["2026.07.0"]
+    },
+    "contents": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/item_id" },
+      "description": "Dataset items included in the pack."
+    },
+    "checksums": {
+      "type": "object",
+      "description": "SHA-256 per contents item; keys must be a subset of contents (enforced by pack-builder, mirrored in golden tests R8).",
+      "propertyNames": { "$ref": "#/$defs/item_id" },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^sha256:[a-f0-9]{64}$"
+      }
+    },
+    "licenses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "item": { "$ref": "#/$defs/item_id" },
+          "license": {
+            "type": "string",
+            "description": "SPDX identifier or registry-defined license code from schemas/licenses.json."
+          },
+          "attribution": {
+            "type": "string",
+            "description": "Attribution string rendered on the About screen."
+          }
+        },
+        "required": ["item", "license", "attribution"],
+        "additionalProperties": false
+      },
+      "description": "Per-item license declarations; every item must exist in the licensing registry (§6.4)."
+    },
+    "signature": {
+      "type": "string",
+      "pattern": "^ed25519:[A-Za-z0-9+/=]+$",
+      "description": "Ed25519 signature over the canonical manifest bytes (signature field excluded)."
+    }
+  },
+  "required": ["manifest_version", "pack_id", "version", "contents", "checksums", "licenses", "signature"],
+  "additionalProperties": false,
+  "$defs": {
+    "item_id": {
+      "type": "string",
+      "pattern": "^[a-z]+:[a-z0-9._-]+$",
+      "description": "Dataset item id as `kind:name[-version]`.",
+      "examples": ["text:qpc-hafs", "layout:qpc-hafs-madani-604", "wbw:en", "morphology:qac-0.4"]
+    }
+  }
+}

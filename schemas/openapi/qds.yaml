@@ -1,0 +1,449 @@
+openapi: 3.1.0
+info:
+  title: Quran Data Service (QDS) — read API seed
+  version: 0.1.0
+  description: |
+    Read-only QDS endpoints per Engineering Handbook §6.5 (subset: verses, pages,
+    words, audio index). Contract-first: FastAPI routes are generated/validated
+    against this file in CI (§8.1, D-011).
+
+    Conventions (§8.1):
+    - Versioned base path `/v1`; JSON everywhere; `snake_case` fields.
+    - Errors are RFC 9457 `application/problem+json`.
+    - QDS routes are public, cacheable, and ETag'd: every 200 carries an `ETag`;
+      clients revalidate with `If-None-Match` and receive `304 Not Modified`.
+    - Quran content is addressed only by canonical keys (§6.1, D-003):
+      `surah:ayah` and `surah:ayah:word_position`.
+  license:
+    name: AGPL-3.0-only
+    identifier: AGPL-3.0-only
+
+servers:
+  - url: /
+    description: Paths below carry the /v1 prefix explicitly.
+
+tags:
+  - name: quran
+    description: Canonical Quran reference data (text, layout, words, audio index).
+
+paths:
+  /v1/quran/verses/{verse_key}:
+    get:
+      operationId: get_verse
+      tags: [quran]
+      summary: Resolve a verse by canonical key
+      description: >
+        Returns the verse addressed by `surah:ayah`, optionally expanded with
+        word records and translations. Field selection keeps payloads small for
+        client caches.
+      parameters:
+        - $ref: '#/components/parameters/verse_key'
+        - name: fields
+          in: query
+          description: Comma-separated projection. Default `text`.
+          schema:
+            type: string
+            default: text
+            examples: ['text,words,translations']
+        - name: translation_ids
+          in: query
+          description: Comma-separated translation resource ids (only with `fields=translations`).
+          schema:
+            type: string
+            examples: ['en-sahih,tr-diyanet']
+        - $ref: '#/components/parameters/if_none_match'
+      responses:
+        '200':
+          description: Verse resolved.
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/verse'
+        '304':
+          $ref: '#/components/responses/not_modified'
+        '400':
+          $ref: '#/components/responses/bad_request'
+        '404':
+          $ref: '#/components/responses/not_found'
+        default:
+          $ref: '#/components/responses/problem'
+
+  /v1/quran/pages/{mushaf_id}/{page}:
+    get:
+      operationId: get_page
+      tags: [quran]
+      summary: Layout of one mushaf page
+      description: >
+        Returns the line/word layout of a page in a specific mushaf edition.
+        Word keys are layout-independent; the page/line placement is
+        layout-dependent (§6.1).
+      parameters:
+        - name: mushaf_id
+          in: path
+          required: true
+          description: Layout+script edition id, e.g. `qpc-hafs-madani-604`.
+          schema:
+            $ref: '#/components/schemas/mushaf_id'
+        - name: page
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 604
+        - $ref: '#/components/parameters/if_none_match'
+      responses:
+        '200':
+          description: Page layout.
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/page'
+        '304':
+          $ref: '#/components/responses/not_modified'
+        '400':
+          $ref: '#/components/responses/bad_request'
+        '404':
+          $ref: '#/components/responses/not_found'
+        default:
+          $ref: '#/components/responses/problem'
+
+  /v1/quran/words/{word_key}:
+    get:
+      operationId: get_word
+      tags: [quran]
+      summary: Resolve a single word by canonical key
+      description: >
+        Returns the word addressed by `surah:ayah:word_position`, with gloss,
+        transliteration, and morphology references when available.
+      parameters:
+        - $ref: '#/components/parameters/word_key'
+        - $ref: '#/components/parameters/if_none_match'
+      responses:
+        '200':
+          description: Word resolved.
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/word'
+        '304':
+          $ref: '#/components/responses/not_modified'
+        '400':
+          $ref: '#/components/responses/bad_request'
+        '404':
+          $ref: '#/components/responses/not_found'
+        default:
+          $ref: '#/components/responses/problem'
+
+  /v1/quran/audio/{reciter_id}/{verse_key}:
+    get:
+      operationId: get_audio_index
+      tags: [quran]
+      summary: Audio index for one ayah and reciter
+      description: >
+        Returns the CDN location and (optionally) word-level timing segments for
+        an ayah recording. Audio itself streams from the CDN; this endpoint only
+        serves the index (§6.3 — audio is not packed by default).
+      parameters:
+        - name: reciter_id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-z0-9]+(?:[._-][a-z0-9]+)*$'
+            examples: ['husary-murattal']
+        - $ref: '#/components/parameters/verse_key'
+        - name: segments
+          in: query
+          description: Include word-level timing segments.
+          schema:
+            type: boolean
+            default: false
+        - $ref: '#/components/parameters/if_none_match'
+      responses:
+        '200':
+          description: Audio index entry.
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/audio_index'
+        '304':
+          $ref: '#/components/responses/not_modified'
+        '400':
+          $ref: '#/components/responses/bad_request'
+        '404':
+          $ref: '#/components/responses/not_found'
+        default:
+          $ref: '#/components/responses/problem'
+
+components:
+  parameters:
+    verse_key:
+      name: verse_key
+      in: path
+      required: true
+      description: Canonical verse key `surah:ayah` (§6.1).
+      schema:
+        $ref: '#/components/schemas/verse_key'
+    word_key:
+      name: word_key
+      in: path
+      required: true
+      description: Canonical word key `surah:ayah:word_position` (§6.1).
+      schema:
+        $ref: '#/components/schemas/word_key'
+    if_none_match:
+      name: If-None-Match
+      in: header
+      required: false
+      description: Conditional revalidation against a previously returned `ETag`.
+      schema:
+        type: string
+
+  headers:
+    ETag:
+      description: Strong validator for this representation; changes when the underlying dataset version changes.
+      required: true
+      schema:
+        type: string
+    CacheControl:
+      description: QDS responses are publicly cacheable.
+      schema:
+        type: string
+        examples: ['public, max-age=86400']
+
+  responses:
+    not_modified:
+      description: Representation unchanged for the presented `If-None-Match` validator.
+      headers:
+        ETag:
+          $ref: '#/components/headers/ETag'
+    bad_request:
+      description: Malformed key or parameters.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/problem'
+    not_found:
+      description: No resource at this canonical key (or unknown mushaf/reciter/translation id).
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/problem'
+    problem:
+      description: Any other error, as RFC 9457 problem details.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/problem'
+
+  schemas:
+    verse_key:
+      type: string
+      description: '`surah:ayah`; surah 1–114, ayah ≥ 1 (bounds validated server-side).'
+      pattern: '^(?:[1-9]|[1-9][0-9]|10[0-9]|11[0-4]):[1-9][0-9]{0,2}$'
+      examples: ['2:255']
+
+    word_key:
+      type: string
+      description: '`surah:ayah:word_position`; word_position follows the space-split ordering of the QPC Ḥafṣ text (§6.1).'
+      pattern: '^(?:[1-9]|[1-9][0-9]|10[0-9]|11[0-4]):[1-9][0-9]{0,2}:[1-9][0-9]{0,2}$'
+      examples: ['2:255:3']
+
+    mushaf_id:
+      type: string
+      description: Layout+script edition identifier.
+      pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+      examples: ['qpc-hafs-madani-604']
+
+    verse:
+      type: object
+      description: A verse resolved from canonical reference data. Text originates from the checksummed QDS dataset only (D-003, R3).
+      required: [verse_key, surah, ayah, dataset_version]
+      properties:
+        verse_key:
+          $ref: '#/components/schemas/verse_key'
+        surah:
+          type: integer
+          minimum: 1
+          maximum: 114
+        ayah:
+          type: integer
+          minimum: 1
+        dataset_version:
+          type: string
+          description: Version of the underlying text dataset (drives the ETag).
+        text:
+          type: string
+          description: Uthmani text; present when `fields` includes `text`.
+        words:
+          type: array
+          description: Present when `fields` includes `words`.
+          items:
+            $ref: '#/components/schemas/word'
+        translations:
+          type: array
+          description: Present when `fields` includes `translations`.
+          items:
+            $ref: '#/components/schemas/translation'
+      additionalProperties: false
+
+    word:
+      type: object
+      required: [word_key, surah, ayah, word_position]
+      properties:
+        word_key:
+          $ref: '#/components/schemas/word_key'
+        surah:
+          type: integer
+          minimum: 1
+          maximum: 114
+        ayah:
+          type: integer
+          minimum: 1
+        word_position:
+          type: integer
+          minimum: 1
+        text:
+          type: string
+          description: Word text in the requested script edition.
+        transliteration:
+          type: string
+        gloss:
+          type: string
+          description: Word-by-word translation in the requested locale.
+        morphology_ref:
+          type: string
+          description: Opaque reference into the morphology dataset (e.g. QAC location id).
+      additionalProperties: false
+
+    translation:
+      type: object
+      required: [translation_id, text]
+      properties:
+        translation_id:
+          type: string
+          description: Translation resource id from the licensing registry.
+          examples: ['en-sahih']
+        text:
+          type: string
+        language:
+          type: string
+          description: BCP 47 language tag.
+          examples: ['en']
+      additionalProperties: false
+
+    page:
+      type: object
+      required: [mushaf_id, page, lines, dataset_version]
+      properties:
+        mushaf_id:
+          $ref: '#/components/schemas/mushaf_id'
+        page:
+          type: integer
+          minimum: 1
+          maximum: 604
+        dataset_version:
+          type: string
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/page_line'
+      additionalProperties: false
+
+    page_line:
+      type: object
+      required: [line_number, line_type]
+      properties:
+        line_number:
+          type: integer
+          minimum: 1
+        line_type:
+          type: string
+          enum: [ayah, surah_name, basmallah]
+        words:
+          type: array
+          description: Word keys placed on this line, in reading order (RTL). Empty for non-`ayah` lines.
+          items:
+            $ref: '#/components/schemas/word_key'
+      additionalProperties: false
+
+    audio_index:
+      type: object
+      required: [reciter_id, verse_key, audio_url, format]
+      properties:
+        reciter_id:
+          type: string
+        verse_key:
+          $ref: '#/components/schemas/verse_key'
+        audio_url:
+          type: string
+          format: uri
+          description: CDN URL of the ayah recording.
+        format:
+          type: string
+          enum: [mp3, opus]
+        duration_ms:
+          type: integer
+          minimum: 0
+        segments:
+          type: array
+          description: Word-level timings; present when `segments=true` and timing data exists for this reciter.
+          items:
+            $ref: '#/components/schemas/audio_segment'
+      additionalProperties: false
+
+    audio_segment:
+      type: object
+      required: [word_position, start_ms, end_ms]
+      properties:
+        word_position:
+          type: integer
+          minimum: 1
+        start_ms:
+          type: integer
+          minimum: 0
+        end_ms:
+          type: integer
+          minimum: 0
+      additionalProperties: false
+
+    problem:
+      type: object
+      description: RFC 9457 problem details.
+      properties:
+        type:
+          type: string
+          format: uri
+          default: 'about:blank'
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 100
+          maximum: 599
+        detail:
+          type: string
+        instance:
+          type: string
+      additionalProperties: true

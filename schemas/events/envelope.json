@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.quran-companion.dev/events/envelope.json",
+  "title": "event_envelope",
+  "description": "Common envelope for every event on the Redis Streams bus (Handbook §9.2). Producers validate against the concrete event schema (envelope + payload) before publishing; consumers are idempotent keyed on event_id (R6).",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique per event; idempotency key for consumers (at-least-once delivery)."
+    },
+    "type": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$",
+      "description": "Dotted event type; also the stream name (one stream per type)."
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC timestamp at the producer, RFC 3339."
+    },
+    "profile_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Profile the event belongs to. IDs only — never note bodies, transcripts, or user-linked audio paths in logs (R7)."
+    },
+    "payload": {
+      "type": "object",
+      "description": "Event-type-specific body; constrained by the concrete event schema."
+    },
+    "schema_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version of the concrete event schema the payload conforms to."
+    }
+  },
+  "required": ["event_id", "type", "occurred_at", "profile_id", "payload", "schema_version"],
+  "additionalProperties": false
+}

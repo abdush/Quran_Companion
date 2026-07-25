@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.quran-companion.dev/events/speech.transcript.ready.json",
+  "title": "speech_transcript_ready",
+  "description": "Published by the speech worker when ASR, alignment, and diff classification finish for a recitation test (Handbook §9.2/§9.3). Consumed by the memorisation (hfz) context. Transcript and error-list bodies stay in object storage — the event carries references only (R7). schema_version 1.",
+  "allOf": [
+    { "$ref": "envelope.json" },
+    {
+      "type": "object",
+      "properties": {
+        "type": { "const": "speech.transcript.ready" },
+        "schema_version": { "const": 1 },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "test_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Recitation test this result belongs to."
+            },
+            "transcript_ref": {
+              "type": "string",
+              "pattern": "^s3://[a-z0-9.-]+/.+$",
+              "description": "Object-storage reference to the aligned transcript artifact."
+            },
+            "errors_ref": {
+              "type": "string",
+              "pattern": "^s3://[a-z0-9.-]+/.+$",
+              "description": "Object-storage reference to the classified error-list artifact (§13.3 taxonomy). Absent when the recitation had no detected errors."
+            },
+            "wer": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Word error rate of the recitation against the canonical range."
+            },
+            "model_version": {
+              "type": "string",
+              "description": "ASR model identifier used, for benchmark traceability (§23 speech bench).",
+              "examples": ["tarteel-ai/whisper-base-ar-quran@int8-2026.06"]
+            }
+          },
+          "required": ["test_id", "transcript_ref", "wer", "model_version"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["type", "schema_version", "payload"]
+    }
+  ]
+}
