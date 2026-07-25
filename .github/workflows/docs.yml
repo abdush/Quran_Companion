@@ -1,0 +1,56 @@
+# Documentation gates (handbook §24: "docs-freshness check").
+#
+#   docs-freshness   — an interface diff (OpenAPI, events, pack/licensing
+#                      schemas, prompts, packages/* public API) must touch the
+#                      corresponding docs/*.md (universal rule R5).
+#   terminology      — error-taxonomy names (§13.3) and the seeded annotation
+#                      category names (FR-AN-2) are spelled identically
+#                      everywhere.
+#
+# Added by the Documentation Agent in task 0.4. The check logic lives in
+# docs/ci/ (Documentation-owned); only this thin entrypoint sits in .github/.
+# DevOps Agent should fold this — and schemas-codegen.yml — into the
+# path-filtered ci.yml pipeline from task 0.1.
+name: docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: docs-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  freshness:
+    name: docs-freshness (rule R5)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history + the PR head commit, so merge-base and the commit
+          # range (for the Docs-Exempt trailer) resolve.
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check docs freshness
+        run: |
+          node docs/ci/check-docs-freshness.mjs \
+            --base "${{ github.event.pull_request.base.sha }}" \
+            --head HEAD
+
+  terminology:
+    name: terminology consistency (ar + en)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check canonical terminology
+        run: node docs/ci/check-terminology.mjs --verbose

@@ -1,0 +1,93 @@
+{
+  "$comment": "Canonical terminology enforced by check-terminology.mjs. Human-readable version: docs/STYLEGUIDE.md §4. Adding or renaming a term requires an Interface Change Protocol RFC — these names appear in API enums, database enums, event schemas, UI strings, and analytics simultaneously.",
+  "config_version": 1,
+  "scan": {
+    "extensions": [".md", ".ts", ".tsx", ".js", ".mjs", ".cjs", ".py", ".json", ".yaml", ".yml", ".sql", ".toml"],
+    "exclude": [
+      "docs/ci/terminology.json",
+      "docs/ci/check-terminology.mjs",
+      "pnpm-lock.yaml",
+      "packages/api-client/src/generated/**",
+      "**/.cache/**",
+      "**/__fixtures__/**",
+      "**/fixtures/**"
+    ],
+    "$comment_exclude": "Generated clients, download caches, and data fixtures hold upstream Quran text and vendor payloads; they carry Arabic words that merely share a root with a category name and are not ours to re-spell.",
+    "$comment": "In Markdown only backticked spans and fenced code blocks are scanned: prose may legitimately say 'a similar-verse jump', but an identifier may not."
+  },
+  "terms": [
+    {
+      "canonical": "stop",
+      "kind": "error_taxonomy",
+      "source": "handbook §13.3",
+      "note": "Silence past threshold, no resume."
+    },
+    {
+      "canonical": "hesitation",
+      "kind": "error_taxonomy",
+      "source": "handbook §13.3",
+      "note": "Silence past threshold mid-sequence, then resume."
+    },
+    {
+      "canonical": "substitution",
+      "kind": "error_taxonomy",
+      "source": "handbook §13.3"
+    },
+    {
+      "canonical": "omission",
+      "kind": "error_taxonomy",
+      "source": "handbook §13.3"
+    },
+    {
+      "canonical": "insertion",
+      "kind": "error_taxonomy",
+      "source": "handbook §13.3"
+    },
+    {
+      "canonical": "similar_jump",
+      "kind": "error_taxonomy",
+      "source": "handbook §13.3",
+      "note": "Never similarJump, similar-jump, or similar_verse_jump."
+    },
+    {
+      "canonical": "context_note",
+      "kind": "error_taxonomy",
+      "source": "handbook §13.3",
+      "note": "Never contextNote or context-note."
+    },
+    {
+      "canonical": "حفظ",
+      "kind": "annotation_category",
+      "script": "arabic",
+      "source": "FR-AN-2",
+      "note": "Seeded category root (memorisation). No tashkīl, no tatweel."
+    },
+    {
+      "canonical": "تجويد",
+      "kind": "annotation_category",
+      "script": "arabic",
+      "source": "FR-AN-2",
+      "note": "Seeded category root (tajweed)."
+    },
+    {
+      "canonical": "وقف وابتداء",
+      "kind": "annotation_category",
+      "script": "arabic",
+      "source": "FR-AN-2",
+      "note": "Seeded category root (stopping/starting). One space, no hyphen, no definite article."
+    }
+  ],
+  "forbidden": [
+    { "pattern": "similar_verse_jump", "instead": "similar_jump" },
+    { "pattern": "similar-verse-jump", "instead": "similar_jump" },
+    { "pattern": "verse_jump", "instead": "similar_jump" },
+    { "pattern": "ommission", "instead": "omission" },
+    { "pattern": "omision", "instead": "omission" },
+    { "pattern": "subsitution", "instead": "substitution" },
+    { "pattern": "substition", "instead": "substitution" },
+    { "pattern": "hesitancy", "instead": "hesitation" },
+    { "pattern": "hesitance", "instead": "hesitation" },
+    { "pattern": "وقف والابتداء", "instead": "وقف وابتداء" },
+    { "pattern": "الوقف والابتداء", "instead": "وقف وابتداء" }
+  ]
+}

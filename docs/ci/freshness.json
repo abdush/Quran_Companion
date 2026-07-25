@@ -1,0 +1,54 @@
+{
+  "$comment": "Rules for check-docs-freshness.mjs (Rule R5: interface-affecting changes update the matching docs/*.md in the same PR). Human-readable version: docs/CONTRIBUTING.md §5.",
+  "config_version": 1,
+  "ignore": [
+    "docs/**",
+    "packages/api-client/src/generated/**",
+    "**/*.md.orig"
+  ],
+  "rules": [
+    {
+      "id": "openapi",
+      "when": ["schemas/openapi/**"],
+      "requireAnyOf": ["docs/API.md"],
+      "guidance": "The OpenAPI contract changed. Update docs/API.md: conventions, the endpoint map, and any usage note that is now wrong. Also record the change in schemas/CHANGELOG.md and bump the spec version (Interface Change Protocol)."
+    },
+    {
+      "id": "events",
+      "when": ["schemas/events/**"],
+      "requireAnyOf": ["docs/ARCHITECTURE.md"],
+      "guidance": "An event schema changed. Update the event table and envelope description in docs/ARCHITECTURE.md §5, and note consumer impact — every consumer is idempotent on event_id (R6) and must tolerate the new shape."
+    },
+    {
+      "id": "packs-and-licensing",
+      "when": ["schemas/packs/**", "schemas/licenses.json", "schemas/licenses.schema.json"],
+      "requireAnyOf": ["docs/DATA.md"],
+      "guidance": "The data-pack manifest or the licensing registry changed. Update docs/DATA.md §3/§4 — including the rendered registry table, which must match schemas/licenses.json (NFR-9: every bundled dataset carries its attribution)."
+    },
+    {
+      "id": "prompts",
+      "when": ["prompts/**"],
+      "requireAnyOf": ["docs/PROMPTS.md"],
+      "guidance": "The prompt registry changed. Update docs/PROMPTS.md (registry rules, ids in use, eval linkage). Prompt changes also require tools/ai-evals to pass its gates."
+    },
+    {
+      "id": "package-public-api",
+      "when": ["packages/*/src/index.ts", "packages/*/package.json"],
+      "perPackage": true,
+      "packageDocs": {
+        "quran-core": ["docs/DATA.md", "docs/ARCHITECTURE.md"],
+        "mushaf-renderer": ["docs/ARCHITECTURE.md"],
+        "fsrs-engine": ["docs/ARCHITECTURE.md"],
+        "tajweed-rules": ["docs/SPEECH.md"],
+        "sync-client": ["docs/SYNC.md"],
+        "api-client": ["docs/API.md"],
+        "ai-core": ["docs/AI.md"],
+        "auth-core": ["docs/SECURITY.md"],
+        "ui": ["docs/STYLEGUIDE.md"],
+        "plugin-sdk": ["docs/PLUGINS.md"]
+      },
+      "defaultDocs": ["docs/ARCHITECTURE.md"],
+      "guidance": "A shared package's public surface changed (src/index.ts is the public API; package.json carries name/exports/deps). Update the doc that describes that package's contract so consumers of the monorepo are not left reading a stale description."
+    }
+  ]
+}
