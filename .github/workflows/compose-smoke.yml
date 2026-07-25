@@ -1,0 +1,36 @@
+# Self-host smoke (DevOps standing constraint): `docker compose up` from a
+# clean checkout must reach a healthy stack — verified on a schedule and on
+# changes to the stack, not by hope.
+name: compose-smoke
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  push:
+    branches: [main]
+    paths:
+      - "infra/**"
+      - "services/**"
+      - "scripts/compose-smoke.sh"
+      - ".github/workflows/compose-smoke.yml"
+  pull_request:
+    paths:
+      - "infra/**"
+      - "services/**"
+      - "scripts/compose-smoke.sh"
+      - ".github/workflows/compose-smoke.yml"
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Boot stack and wait for healthy
+        run: bash scripts/compose-smoke.sh
+      - name: Logs on failure
+        if: failure()
+        run: docker compose -f infra/compose/docker-compose.yml logs
+      - name: Tear down
+        if: always()
+        run: docker compose -f infra/compose/docker-compose.yml down -v
