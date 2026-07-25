@@ -1,0 +1,24 @@
+# Node / TypeScript
+node_modules/
+dist/
+build/
+.turbo/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Environment & editors
+.env
+.env.*
+!.env.example
+.idea/
+.vscode/
+
+# OS
+.DS_Store

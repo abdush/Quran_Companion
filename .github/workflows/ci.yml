@@ -1,0 +1,106 @@
+# CI skeleton (task 0.1, handbook §24): path-filtered lint → typecheck → unit
+# per workspace, plus boundary lint (rule R4). Later tasks append contract,
+# build, e2e/ai-evals, license-manifest and docs-freshness gates.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      ts: ${{ steps.filter.outputs.ts }}
+      api: ${{ steps.filter.outputs.api }}
+      speech: ${{ steps.filter.outputs.speech }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            ts:
+              - 'apps/**'
+              - 'packages/**'
+              - 'tools/**'
+              - 'package.json'
+              - 'pnpm-workspace.yaml'
+              - 'pnpm-lock.yaml'
+              - 'turbo.json'
+              - '.dependency-cruiser.cjs'
+              - '.github/workflows/ci.yml'
+            api:
+              - 'services/api/**'
+              - 'shared/py/**'
+              - 'schemas/**'
+              - '.github/workflows/ci.yml'
+            speech:
+              - 'services/speech/**'
+              - 'shared/py/**'
+              - 'schemas/**'
+              - '.github/workflows/ci.yml'
+
+  ts:
+    name: ts (lint, typecheck, unit, boundaries)
+    needs: changes
+    if: needs.changes.outputs.ts == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run lint
+      - run: pnpm run typecheck
+      - run: pnpm run test
+      - name: Boundary lint (dependency-cruiser, rule R4)
+        run: pnpm run boundaries
+
+  api:
+    name: api (lint, boundaries, unit)
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - run: uv sync
+      - run: uv run ruff check .
+      - name: Boundary lint (import-linter, rule R4)
+        run: uv run lint-imports
+      - run: uv run pytest
+
+  speech:
+    name: speech (lint, unit)
+    needs: changes
+    if: needs.changes.outputs.speech == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/speech
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - run: uv sync
+      - run: uv run ruff check .
+      - run: uv run pytest

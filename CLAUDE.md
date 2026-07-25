@@ -35,7 +35,7 @@ You are working inside the Quran Companion monorepo. This repository is built by
 ## Current status
 
 - **Phase:** 0 (Foundations) — see handbook §27 and §29.
-- **Done:** handbook, agent playbooks.
-- **Next waves:** W1 = monorepo scaffold (DevOps) · schemas seed (Architecture) · QDS import (Backend) · docs scaffold (Documentation).
+- **Done:** handbook, agent playbooks, **0.1 monorepo scaffold + CI skeleton** (§21 tree, pnpm+Turborepo, uv services with health checks, compose stack verified healthy, path-filtered CI, boundary-lint stubs).
+- **Next waves:** W1 remaining = 0.2 schemas seed (Architecture) · 0.3 QDS import (Backend) · docs scaffold (Documentation). Open items from 0.1: owners for `content/`, `tools/pack-builder`, `tools/codegen`, `packages/tajweed-rules`, `packages/plugin-sdk` need Architecture arbitration; §21/§28 say `OWNER.md` but task 0.1 specified `README.md` — owner lines live in the READMEs pending an ADR.
 
 > Update this Status section at the end of any session that completes a task.

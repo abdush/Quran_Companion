@@ -1,0 +1,19 @@
+{
+  "name": "quran-companion",
+  "private": true,
+  "packageManager": "pnpm@10.13.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "build": "turbo run build",
+    "boundaries": "depcruise apps packages --config .dependency-cruiser.cjs"
+  },
+  "devDependencies": {
+    "dependency-cruiser": "^16.10.3",
+    "turbo": "^2.5.4"
+  }
+}
