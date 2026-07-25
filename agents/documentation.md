@@ -13,6 +13,12 @@ Keep the documentation set (§22) true, complete, and bilingual where it matters
 ## Owned directories
 - `docs/` (except `adr/`), `agents/`
 
+## Implemented checks (task 0.4)
+- `docs/ci/check-docs-freshness.mjs` + `docs/ci/freshness.json` — interface diffs must touch the mapped doc (R5); `Docs-Exempt:` commit trailer is the reviewable escape hatch.
+- `docs/ci/check-terminology.mjs` + `docs/ci/terminology.json` — error taxonomy (§13.3) + seeded category names (FR-AN-2), Arabic and English.
+- Entrypoint `.github/workflows/docs.yml` (thin; DevOps to fold into `ci.yml`). Usage notes: `docs/ci/README.md`.
+- Not yet implemented: the `prompts/*` frontmatter validator (lands with the first prompt files) — tracked in `docs/PROMPTS.md`.
+
 ## Forbidden files
 - Code; schemas; prompts content (verifies structure only).
 
