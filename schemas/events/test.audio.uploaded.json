@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.quran-companion.dev/events/test.audio.uploaded.json",
+  "title": "test_audio_uploaded",
+  "description": "Published by the API (hfz context) after the client confirms upload of a recitation-test recording to object storage (Handbook §9.3). Consumed by the speech worker. schema_version 1.",
+  "allOf": [
+    { "$ref": "envelope.json" },
+    {
+      "type": "object",
+      "properties": {
+        "type": { "const": "test.audio.uploaded" },
+        "schema_version": { "const": 1 },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "test_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Recitation test this recording belongs to."
+            },
+            "audio_ref": {
+              "type": "string",
+              "pattern": "^s3://[a-z0-9.-]+/.+$",
+              "description": "Object-storage reference to the uploaded audio. Bucket-internal path only; must not encode user identity (R7)."
+            },
+            "content_type": {
+              "type": "string",
+              "description": "MIME type of the recording.",
+              "examples": ["audio/ogg; codecs=opus"]
+            },
+            "duration_ms": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Client-reported duration; the worker re-measures after VAD."
+            },
+            "range": {
+              "type": "object",
+              "description": "Canonical recited range (§6.1) so the worker can fetch the reference text by key — never inline Quran text in events (D-003).",
+              "properties": {
+                "start": {
+                  "type": "string",
+                  "pattern": "^(?:[1-9]|[1-9][0-9]|10[0-9]|11[0-4]):[1-9][0-9]{0,2}$"
+                },
+                "end": {
+                  "type": "string",
+                  "pattern": "^(?:[1-9]|[1-9][0-9]|10[0-9]|11[0-4]):[1-9][0-9]{0,2}$"
+                }
+              },
+              "required": ["start", "end"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["test_id", "audio_ref", "content_type", "range"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["type", "schema_version", "payload"]
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+# Fails when packages/api-client generated types are stale relative to schemas/
+# (Rule R1: schemas first, regenerate, then implement).
+#
+# Added by Architecture Agent in task 0.2; DevOps Agent should fold this into
+# the path-filtered CI pipeline from task 0.1 when it lands.
+name: schemas-codegen
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'schemas/**'
+      - 'tools/codegen/**'
+      - 'packages/api-client/**'
+  pull_request:
+    paths:
+      - 'schemas/**'
+      - 'tools/codegen/**'
+      - 'packages/api-client/**'
+
+jobs:
+  check-generated-types:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        # with:
+        #   version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @qc/codegen run check

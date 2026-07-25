@@ -1,0 +1,15 @@
+{
+  "name": "@qc/codegen",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Generates TypeScript types from schemas/ into packages/api-client/src/generated. `generate` writes, `check` fails if committed output is stale.",
+  "scripts": {
+    "generate": "node generate.mjs",
+    "check": "node generate.mjs --check"
+  },
+  "devDependencies": {
+    "json-schema-to-typescript": "^15.0.4",
+    "openapi-typescript": "^7.8.0"
+  }
+}
