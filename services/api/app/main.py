@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.core import db
-from app.qds.router import install_error_handler
+from app.core.problems import install_problem_handlers
 from app.qds.router import router as qds_router
 
 
@@ -23,7 +23,7 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(title="Quran Companion API", version="0.1.0", lifespan=lifespan)
 
-install_error_handler(app)
+install_problem_handlers(app)
 app.include_router(qds_router)
 
 

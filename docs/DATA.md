@@ -91,6 +91,13 @@ built by `tools/pack-builder`. Normative schema:
 }
 ```
 
+That example is illustrative (it is the handbook §6.3 sketch). The pack actually
+shipped by task 0.3, `core-hafs` `2026.07.0`, contains four items —
+`text:tanzil-uthmani-1.1`, `text:qpc-hafs`, `layout:qpc-hafs-madani-604`,
+`wbw:en` — and **no** morphology; `morphology:qac-0.4` arrives with the root
+explorer (FR-AI-5). Payload checksums reproduce byte-identically across
+rebuilds, which is what makes a pack's identity meaningful.
+
 Rules:
 
 - Clients **refuse unsigned or checksum-failing packs** (NFR-1). A checksum
@@ -123,15 +130,37 @@ constraints (schema: `schemas/licenses.schema.json`). Rules:
 - Adding a dataset = registry entry + attribution string in the same PR as the
   import code.
 
-Registered so far:
+Registered so far (rendered from `schemas/licenses.json`, registry version 1):
 
 | Item | License | Dataset |
 |---|---|---|
+| `text:tanzil-uthmani-1.1` | CC-BY-3.0 | Tanzil Quran Text (Uthmani, version 1.1) |
+| `text:qpc-hafs` | `QUL-Community-Resource` | QPC Ḥafṣ Uthmani word-level script (KFGQPC, via QUL) |
+| `layout:qpc-hafs-madani-604` | `QUL-Community-Resource` | KFGQPC V1 Madani muṣḥaf layout, 604 pages / 15 lines (1405H print, via QUL) |
+| `wbw:en` | `QUL-Community-Resource` | Word-by-word English translation and transliteration (QuranWBW, via QUL) |
 | `timing:quran-align-1.0` | CC-BY-4.0 | quran-align word-level audio timestamps (cpfair/quran-align) |
 
-Task 0.3 (QDS import) registers the Tanzil Uthmani text, the QPC Ḥafṣ script,
-the Madani 604 layout, and the English word-by-word data; this table is
-re-rendered in that PR.
+`QUL-Community-Resource` is a **registry-defined code**, not an SPDX id: QUL
+publishes these community-curated resources for free use in Quranic
+applications without a single blanket grant. Every non-SPDX code must carry
+`usage_constraints` spelling out what it permits — enforced by
+`services/api/tests/test_licensing_gate.py`.
+
+Two constraints from this set are worth reading before touching the import
+pipeline:
+
+- **Tanzil permits verbatim redistribution only.** The pack payload therefore
+  ships Tanzil's bytes unmodified, and the golden checksum is taken over those
+  bytes. The basmallah-stripped ayah text that `qds.verse` stores is a separate,
+  derived representation.
+- **The layout is redistributed with declared modifications**: the page-offset
+  corrections in `tools/pack-builder/fixtures/layout_errata.json`, and the
+  surah-name / basmallah line typing derived from word placements. Both are
+  documented in [the pack-builder README](../tools/pack-builder/README.md).
+
+Attribution strings are copied **verbatim** from the registry into every pack
+manifest, and a mismatch fails the build — so rewording an `attribution` means
+rebuilding packs.
 
 Regenerate this table from the registry when it changes (it is a rendering of
 `schemas/licenses.json`, not a second source of truth). The docs-freshness check
@@ -176,10 +205,19 @@ profile belongs in another context.
 
 | Element | State |
 |---|---|
-| Canonical addressing types (`packages/quran-core`) | Package scaffold; types land with task 0.3 |
+| Canonical addressing types (Python) | Done — `shared/py/qc_shared/quran` (task 0.3) |
+| Canonical addressing types (TS, `packages/quran-core`) | Package scaffold only; lands with the first client |
 | QDS read OpenAPI | Specified (`schemas/openapi/qds.yaml`, task 0.2) |
-| Import pipeline (Tanzil/QUL text, layout, wbw) | **Task 0.3, not started** |
+| Import pipeline (Tanzil/QUL text, layout, wbw) | Done — `tools/pack-builder` (task 0.3) |
+| `qds.*` reference tables | Done — 8 tables, migration `0001_qds` (task 0.3) |
+| QDS endpoints | `get_verse`, `get_page` live; `get_word`, `get_audio_index` spec-only |
 | Pack manifest schema | Defined (task 0.2) |
-| `tools/pack-builder` | Not created; owner not yet assigned (open item from task 0.1) |
-| Licensing registry | 1 entry (`timing:quran-align-1.0`) |
+| `core-hafs` pack | Built and signed — `2026.07.0`, 4 items, 1.7 MiB (task 0.3) |
+| `tools/pack-builder` | Created; owner resolved to the Backend Agent (§6.5) |
+| Licensing registry | 5 entries (4 shipped in `core-hafs` + `timing:quran-align-1.0`) |
 | Credits screen rendering | Not started (no client yet) |
+
+Corpus as imported: **6236** verses, **77 429** words, **9046** layout lines
+across 604 pages (15 per page, except the two framed opening pages at 8). The
+9046 lines decompose as 8820 ayah lines + 114 surah-name lines + 112 basmallah
+lines — an identity the layout golden gate asserts.

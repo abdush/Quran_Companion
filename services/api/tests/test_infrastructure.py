@@ -68,6 +68,52 @@ class TestMemoryCache:
         assert await cache.get("k") is None
 
 
+class TestUnhandledErrorsBecomeProblems:
+    """§8.1: every error leaves the API as problem+json, handler or not.
+
+    A dependency resolves before the route body, so a database outage would
+    otherwise produce a bare `500 text/plain` — unparseable exactly when a
+    client most needs a structured error.
+    """
+
+    def test_dependency_failure_returns_problem_json(self) -> None:
+        from fastapi.testclient import TestClient
+
+        from app.main import app
+        from app.qds.router import connection as connection_dependency
+
+        async def broken():
+            raise ConnectionRefusedError(
+                "password authentication failed for user 'qc' at postgres:5432"
+            )
+            yield  # pragma: no cover - never reached
+
+        app.dependency_overrides[connection_dependency] = broken
+        try:
+            with TestClient(app, raise_server_exceptions=False) as client:
+                response = client.get("/v1/quran/verses/1:1")
+        finally:
+            app.dependency_overrides.clear()
+
+        assert response.status_code == 500
+        assert response.headers["content-type"].startswith("application/problem+json")
+        body = response.json()
+        assert body["status"] == 500
+        assert body["instance"] == "/v1/quran/verses/1:1"
+        # No connection strings, credentials or query fragments (rule R7).
+        assert "password" not in response.text
+        assert "postgres" not in response.text
+        assert body["detail"] == "The request could not be completed."
+
+    def test_health_survives_a_database_outage(self) -> None:
+        from fastapi.testclient import TestClient
+
+        from app.main import app
+
+        with TestClient(app) as client:
+            assert client.get("/health").json() == {"status": "ok"}
+
+
 class TestRedisCacheDegradesGracefully:
     """A cache outage must never turn a readable verse into an error."""
 

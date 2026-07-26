@@ -15,7 +15,7 @@ from fastapi import APIRouter, Depends, Header, Path, Query, Request, Response
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app.core.db import qds_connection
-from app.core.problems import CONTENT_TYPE, ProblemError, problem_response
+from app.core.problems import CONTENT_TYPE
 from app.qds import service
 from app.qds.schemas import Page, Verse
 
@@ -105,9 +105,3 @@ async def get_page(
 ) -> Response:
     representation = await service.get_page(active, mushaf_id, page)
     return _respond(request, representation, if_none_match)
-
-
-def install_error_handler(app) -> None:
-    @app.exception_handler(ProblemError)
-    async def _handle(request: Request, error: ProblemError):
-        return problem_response(request, error)
