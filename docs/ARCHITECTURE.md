@@ -105,6 +105,30 @@ Rules (enforced by dependency-cruiser, Rule R4):
   (`packages/api-client/src/generated`, produced by `tools/codegen` from
   `schemas/openapi/`); **no hand-written fetch calls in feature code**.
 
+### Muṣḥaf rendering (`packages/mushaf-renderer`)
+
+Page rendering is split into a **pure layout core** and two thin target
+adapters, so both platforms render the same geometry by construction rather than
+by review:
+
+```
+pack (quran-core) → composePage() → PageComposition → <ComposedPage/>  (web | native)
+                                          ↓
+                                    hitTestPage() → WordKey
+```
+
+A `PageComposition` is plain data — boxes in design units, in reading order, each
+word carrying its canonical key — with no React, DOM or platform types in it.
+That is what makes layout snapshottable without a DOM and hit-testing exact: the
+boxes that were rendered are the boxes that are tested against. Text is read only
+from a verified pack; the renderer never fetches at render time and cannot
+produce Quran text the pack did not contain (D-003).
+
+Public surface: `composePage` / `createPageComposer`, `hitTestPage`, the
+`TextMeasurer` and `PageFontSource` interfaces (per-page QPC fonts, LRU-cached),
+and `MushafPage` / `ComposedPage` from `@qc/mushaf-renderer/web` and `/native`.
+Selection, highlight layers and playback sync are Phase 1.
+
 ## 4. Bounded contexts & ownership
 
 | Context | Package | Owns tables | Publishes events | Consumes |
@@ -204,7 +228,7 @@ running software:
 | `services/api` (FastAPI) | Health endpoint only; bounded-context packages not yet created |
 | `services/speech` | Idle worker skeleton; consumes nothing yet |
 | Gateway | Not started (compose stack runs api, speech, postgres, redis, minio) |
-| `packages/*` | Directory scaffolds + `api-client` generated types |
+| `packages/*` | `quran-core` + `mushaf-renderer` implemented (task 0.4); `api-client` generated types; the rest are directory scaffolds |
 | Event bus | Schemas defined (`test.audio.uploaded`, `speech.transcript.ready`); no producer/consumer code yet |
 | QDS | OpenAPI read subset specified (`schemas/openapi/qds.yaml`); import pipeline is task 0.3 |
 | Boundary lint | dependency-cruiser + import-linter wired as CI stubs |

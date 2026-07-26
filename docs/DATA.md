@@ -117,6 +117,30 @@ Rules:
 id must appear in the licensing registry — CI fails a pack whose item is not
 registered.
 
+### Reading a pack on the client (`packages/quran-core`)
+
+`openPack(bytes, { trustedKeys })` returns a **fully verified** pack or throws;
+there is no option to skip verification, and an empty `trustedKeys` list refuses
+everything rather than accepting everything (NFR-1). Refusals carry a typed
+`PackError.code`: `unsigned`, `untrusted-key`, `bad-signature`,
+`checksums-incomplete`, `checksum-mismatch`, `undeclared-payload`,
+`missing-license`, `unsupported-manifest-version`, and the `malformed-*` family.
+Clients branch on it — "update the app" reads differently from "re-download".
+
+Two properties of the reader worth knowing when producing packs:
+
+- **Payloads are matched to items by SHA-256, not by file name.** Every file
+  under `data/` is hashed once and an item claims the file whose digest equals
+  its declared checksum. A builder may rename payload files freely; a file no
+  item claims refuses the pack. Payload naming is therefore *not* an interface.
+- **Item format follows from item kind** — `layout:` → the layout table,
+  `wbw:` → glosses, `text:` → the word table when the id is a known word-level
+  edition, otherwise verbatim bytes. Adding a script edition is a deliberate act,
+  not a sniffing heuristic.
+
+The reader also exposes the `word_key → (mushaf_id, page, line)` mapping the pack
+ships (§1), which is what `packages/mushaf-renderer` composes pages from.
+
 ## 4. Licensing manifest
 
 [`schemas/licenses.json`](../schemas/licenses.json) is the **single registry** of
@@ -206,7 +230,8 @@ profile belongs in another context.
 | Element | State |
 |---|---|
 | Canonical addressing types (Python) | Done — `shared/py/qc_shared/quran` (task 0.3) |
-| Canonical addressing types (TS, `packages/quran-core`) | Package scaffold only; lands with the first client |
+| Canonical addressing types (TS, `packages/quran-core`) | Done — keys, normalisation, pack reader (task 0.4) |
+| Client pack reader (verification, layout/word tables) | Done — `packages/quran-core/src/pack` (task 0.4) |
 | QDS read OpenAPI | Specified (`schemas/openapi/qds.yaml`, task 0.2) |
 | Import pipeline (Tanzil/QUL text, layout, wbw) | Done — `tools/pack-builder` (task 0.3) |
 | `qds.*` reference tables | Done — 8 tables, migration `0001_qds` (task 0.3) |

@@ -1,0 +1,28 @@
+{
+  "name": "@qc/quran-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Canonical Quran addressing (VerseKey/WordKey/WordRange/PageRef), tashkil-aware normalisation, and the signed data-pack reader. No Quran text lives in this package \u2014 it is read from packs (handbook \u00a76.1, \u00a76.3, D-003).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "fixture": "node scripts/make-fixture-pack.mjs"
+  },
+  "dependencies": {
+    "@qc/api-client": "workspace:*",
+    "@noble/ed25519": "^3.1.0",
+    "@noble/hashes": "^2.2.0",
+    "fflate": "^0.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "@vitest/coverage-v8": "^3.2.7",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
+  }
+}
