@@ -1,0 +1,40 @@
+{
+  "manifest_version": 1,
+  "pack_id": "core-hafs",
+  "version": "2026.07.0",
+  "contents": [
+    "text:tanzil-uthmani-1.1",
+    "text:qpc-hafs",
+    "layout:qpc-hafs-madani-604",
+    "wbw:en"
+  ],
+  "checksums": {
+    "text:tanzil-uthmani-1.1": "sha256:a0d9cd3755df1570c14a3a2c226b401ede4e4d12df44655f5873c0e1924bdd38",
+    "text:qpc-hafs": "sha256:6cacacce27761a0829160528c6829cb51db5728f4029b42ac92d15eb16a7cd85",
+    "layout:qpc-hafs-madani-604": "sha256:0042bb26428d17d85e512b4ab089582d0ddec57152e4df932be420d4013a3571",
+    "wbw:en": "sha256:957e94a78cc06119e370a67dacf4244906f1b4618b1e160958a4101597288234"
+  },
+  "licenses": [
+    {
+      "item": "text:tanzil-uthmani-1.1",
+      "license": "CC-BY-3.0",
+      "attribution": "Quran text from the Tanzil Project (tanzil.net), Uthmani version 1.1, © 2007-2026 Tanzil Project, licensed under CC BY 3.0."
+    },
+    {
+      "item": "text:qpc-hafs",
+      "license": "QUL-Community-Resource",
+      "attribution": "Word-level QPC Ḥafṣ Uthmani script published by the King Fahd Glorious Qur'an Printing Complex and curated by the Quranic Universal Library (QUL, qul.tarteel.ai)."
+    },
+    {
+      "item": "layout:qpc-hafs-madani-604",
+      "license": "QUL-Community-Resource",
+      "attribution": "Madani muṣḥaf page and line layout (KFGQPC V1, 1405H print) published by the King Fahd Glorious Qur'an Printing Complex and curated by the Quranic Universal Library (QUL, qul.tarteel.ai)."
+    },
+    {
+      "item": "wbw:en",
+      "license": "QUL-Community-Resource",
+      "attribution": "Word-by-word English glosses and transliteration from QuranWBW.com, curated by the Quranic Universal Library (QUL, qul.tarteel.ai)."
+    }
+  ],
+  "signature": "ed25519:7TqR4P7HWTHulaIF5lFh2VYm5Y2SfwG5YYggXNmUVlGnpk3LfmMVxqIp0VSP0WeQy2/hLGAttfMGNn6TFdimAg=="
+}
