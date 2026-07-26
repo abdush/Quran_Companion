@@ -22,3 +22,14 @@ __pycache__/
 
 # OS
 .DS_Store
+
+# Pack-builder working directories (task 0.3)
+tools/pack-builder/.cache/
+tools/pack-builder/build/
+tools/pack-builder/dist/
+tools/pack-builder/.keys/
+
+# Coverage
+.coverage
+.coverage.*
+htmlcov/

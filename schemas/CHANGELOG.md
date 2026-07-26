@@ -4,6 +4,34 @@ All changes to the `schemas/` tree land here, schema-first (Rule R1). Interface
 changes follow the Interface Change Protocol in `agents/README.md`; each entry
 names the consumer-migration note.
 
+## 0.1.1 — 2026-07-26 (Task 0.3, Backend Agent)
+
+Registry data only — **no contract shape changed**, so no consumer migration is
+required and no version bump applies to any schema file.
+
+- `licenses.json` — registered the four datasets the `core-hafs` pack ships
+  (§6.4, NFR-9): `text:tanzil-uthmani-1.1` (CC-BY-3.0),
+  `text:qpc-hafs`, `layout:qpc-hafs-madani-604` and `wbw:en` (all
+  `QUL-Community-Resource`, a registry-defined code documented in each entry's
+  `usage_constraints`, since QUL publishes these community-curated resources
+  without a single SPDX grant). Existing entry `timing:quran-align-1.0` is
+  unchanged apart from its position.
+
+  The gate is now executable rather than aspirational:
+  `qc_shared.licensing` is the single implementation, used by
+  `pack-builder check-licenses`, by the pack builder and loader before any
+  write, and by the `services/api` test suite — so an unregistered dataset
+  fails CI on the existing `api` path filter (`schemas/**`).
+
+  Attribution strings are copied verbatim from this registry into every pack
+  manifest, and a mismatch is a build failure; do not reword an `attribution`
+  without rebuilding packs.
+
+Consumers of `openapi/qds.yaml` gained their first implementation
+(`get_verse`, `get_page` in `services/api/app/qds`); `get_word` and
+`get_audio_index` remain spec-only and are asserted as such by the contract
+tests.
+
 ## 0.1.0 — 2026-07-25 (Task 0.2, Architecture Agent)
 
 Initial seed. No consumers exist yet, so no migration notes apply.

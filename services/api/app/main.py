@@ -1,13 +1,30 @@
-"""Quran Companion API — scaffold only (task 0.1).
+"""Quran Companion API — FastAPI modular monolith (handbook §5, §7–§9).
 
-No feature logic lives here yet. Bounded contexts (usr/ann/hfz/qds/kb/tutor/
-sync/fam/cm) are empty packages; the Backend Agent implements them
-schema-first (rule R1).
+Bounded contexts mount their own routers; nothing cross-context happens here.
+`qds` is live as of task 0.3; the remaining contexts are still empty packages.
 """
+
+from __future__ import annotations
+
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-app = FastAPI(title="Quran Companion API", version="0.0.1")
+from app.core import db
+from app.core.problems import install_problem_handlers
+from app.qds.router import router as qds_router
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    yield
+    await db.dispose()
+
+
+app = FastAPI(title="Quran Companion API", version="0.1.0", lifespan=lifespan)
+
+install_problem_handlers(app)
+app.include_router(qds_router)
 
 
 @app.get("/health")

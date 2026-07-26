@@ -3,6 +3,46 @@
   "registry_version": 1,
   "entries": [
     {
+      "item": "text:tanzil-uthmani-1.1",
+      "name": "Tanzil Quran Text (Uthmani, version 1.1)",
+      "source_url": "https://tanzil.net/download/",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "attribution": "Quran text from the Tanzil Project (tanzil.net), Uthmani version 1.1, © 2007-2026 Tanzil Project, licensed under CC BY 3.0.",
+      "usage_constraints": "Verbatim redistribution only — the Tanzil terms forbid modifying the text. The source (Tanzil Project) must be clearly indicated with a link to tanzil.net, and the copyright notice must be reproduced in all files derived from or containing a substantial portion of the text. The import pipeline never normalises or re-splits this text; it is checksummed as the canonical reference.",
+      "added_at": "2026-07-25"
+    },
+    {
+      "item": "text:qpc-hafs",
+      "name": "QPC Ḥafṣ Uthmani word-level script (King Fahd Glorious Qur'an Printing Complex, via QUL)",
+      "source_url": "https://qul.tarteel.ai/resources/quran-script",
+      "license": "QUL-Community-Resource",
+      "license_url": "https://qul.tarteel.ai/credits",
+      "attribution": "Word-level QPC Ḥafṣ Uthmani script published by the King Fahd Glorious Qur'an Printing Complex and curated by the Quranic Universal Library (QUL, qul.tarteel.ai).",
+      "usage_constraints": "Registry-defined code: QUL publishes these community-curated resources for free use in Quranic applications without a single SPDX grant. Attribution to the King Fahd Glorious Qur'an Printing Complex and to QUL is required on the About screen. Redistributed verbatim inside signed data packs only; no modification of the script.",
+      "added_at": "2026-07-25"
+    },
+    {
+      "item": "layout:qpc-hafs-madani-604",
+      "name": "KFGQPC V1 Madani muṣḥaf layout, 604 pages / 15 lines (1405H print, via QUL)",
+      "source_url": "https://qul.tarteel.ai/resources/mushaf-layout/15",
+      "license": "QUL-Community-Resource",
+      "license_url": "https://qul.tarteel.ai/credits",
+      "attribution": "Madani muṣḥaf page and line layout (KFGQPC V1, 1405H print) published by the King Fahd Glorious Qur'an Printing Complex and curated by the Quranic Universal Library (QUL, qul.tarteel.ai).",
+      "usage_constraints": "Registry-defined code, as for text:qpc-hafs. Modifications must be declared: this pack applies the page-offset corrections recorded in tools/pack-builder/fixtures/layout_errata.json and derives surah-name/basmallah line typing from the word placements; both are documented in the pack-builder README.",
+      "added_at": "2026-07-25"
+    },
+    {
+      "item": "wbw:en",
+      "name": "Word-by-word English translation and transliteration (QuranWBW, via QUL)",
+      "source_url": "https://qul.tarteel.ai/resources/word-translation",
+      "license": "QUL-Community-Resource",
+      "license_url": "https://qul.tarteel.ai/credits",
+      "attribution": "Word-by-word English glosses and transliteration from QuranWBW.com, curated by the Quranic Universal Library (QUL, qul.tarteel.ai).",
+      "usage_constraints": "Registry-defined code, as for text:qpc-hafs. Attribution to QuranWBW.com and QUL is required on the About screen. Glosses are aids to understanding, not a translation of record, and must be labelled as such in the UI.",
+      "added_at": "2026-07-25"
+    },
+    {
       "item": "timing:quran-align-1.0",
       "name": "quran-align word-level audio timestamps (cpfair/quran-align)",
       "source_url": "https://github.com/cpfair/quran-align",
